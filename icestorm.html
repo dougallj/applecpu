@@ -1,0 +1,72 @@
+<html><head><meta charset="UTF-8"><title>Icestorm Overview</title><style>body { background-color: #E7F2F8 }</style></head><body><pre><strong>Apple M1 Microarchitecture Research</strong> by <a href="https://twitter.com/dougallj">Dougall Johnson</a>
+
+Firestorm: <a href="firestorm.html">Overview</a> | <a href="firestorm-int.html">Base Instructions</a> | <a href="firestorm-simd.html">SIMD and FP Instructions</a>
+Icestorm:  <a href="icestorm.html">Overview</a> | <a href="icestorm-int.html">Base Instructions</a> | <a href="icestorm-simd.html">SIMD and FP Instructions</a>
+
+</pre><p>This is an early attempt at microarchitecture documentation for the CPU in the Apple M1, inspired by and building on the amazing work of <a href="https://uops.info/">Andreas Abel</a>,
+<a href="https://www.anandtech.com/show/16226/apple-silicon-m1-a14-deep-dive/2">Andrei Frumusanu</a>, <a href="https://github.com/Veedrac/microarchitecturometer">@Veedrac</a>,
+<a href="https://github.com/travisdowns/robsize">Travis Downs</a>, <a href="http://blog.stuffedcow.net/2013/05/measuring-rob-capacity/">Henry Wong</a>
+and <a href="https://agner.org/optimize/">Agner Fog</a>. This documentation is my best effort, but it is based on black-box reverse engineering, and there are definitely mistakes. No warranty of any kind (and not just as a legal technicality). To make it easier to verify the information and/or identify such errors, entries in the instruction tables link to the experiments and results (~35k tables of counter values).</p>
+
+<p>Icestorm is the high-efficiency microarchitecture used by the four E-cores in the M1. Low-power ARM cores are generally a bit less novel, so the notes here are a bit less thorough.</p>
+
+<h2>Icestorm Units (ports)</h2>
+
+<p>These are refered to as "units", to try to avoid confusion if Apple releases official documentation, as they
+probably refer to them as "ports" or "pipes", and order them differently. (If this just causes more confusion,
+I apologise.)</p>
+
+<pre>
+Integer units:
+
+  1:  alu + br
+  2:  alu + br + div
+  3:  alu + mul + bfm + crc
+
+Load and store units (up to 128-bit loads and stores, including address generation with shifts up to LSL #3):
+
+  7:  store + amx
+  8:  load/store + amx
+  9:  load
+  10: load
+
+FP/SIMD units:
+
+  6: fp/simd
+  7: fp/simd + fdiv (half width) ...
+</pre>
+
+
+<h2>Elimination</h2>
+
+<p>Icestorm seems to eliminate "mov + movk" and "adr/adrp" as well as the Firestorm things.</p>
+
+
+<h2>Instruction Fusion</h2>
+
+<p>Mostly the same as Firestorm?</p>
+
+
+<h2>Complex Latencies</h2>
+
+<p>Several instructions have latencies that aren't adequately described in the instruction tables:</p>
+
+<ul>
+<li>MADD's output can be passed to its third operand (the addend) with 1c latency, but if it's chained with other instructions it has 3c latency.</li>
+<li>Loads may be passed to the base address of other loads with 3c latency (which is nice for linked lists), but chaining with out ALU operations gives a latency of 4c. (Although the second destination register in an LDP always has 4c latency.)</li>
+</ul>
+
+
+<h2>Other limits</h2>
+
+<ul>
+<li>Retires per cycle: 4</li>
+<li>ROB (in-flight renames): ~111</li>
+<li>Integer physical register file size: ~79</li>
+<li>FP/SIMD physical register file size: ~87</li>
+</ul>
+
+<p>These numbers mostly come from the <a href="https://gist.github.com/dougallj/5bafb113492047c865c0c8cfbc930155">M1 buffer size measuring tool</a>.
+The M1 seems to use something along the lines of a validation buffer, rather than a conventional reorder buffer, which
+complicates measurements a bit. So these may or may not be accurate.</p>
+</body></html>

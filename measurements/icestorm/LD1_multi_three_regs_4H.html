@@ -1,0 +1,60 @@
+<html><head><title>Icestorm: LD1 (multiple, three registers, 4H) measurements</title></head><body><style>body { background-color: #E7F2F8 }</style>
+		<style>
+		input[type=checkbox] {
+			display: none;
+		}
+		input[type=checkbox]:checked ~ .remove-check {
+		    display: none;
+		}
+		input[type=checkbox] ~ label > p::before {
+			content: "\25BC\A0";
+			width: 50px;
+		font-family: "Arial", monospace;
+		}
+		input[type=checkbox]:checked ~ label > p::before {
+			content: "\25BA\A0";
+			width: 50px;
+			font-family: "Arial", monospace;
+		}
+		pre { margin: 0; }
+		label {
+			cursor: pointer;
+		}
+		.clicky {
+			text-decoration: underline;
+		}
+		td {
+			text-align: right;
+		}
+		thead > tr > td {
+			font-weight: bold;
+			text-align: center;
+		}
+		</style>
+		<pre><strong>Apple M1 Microarchitecture Research</strong> by <a href="https://twitter.com/dougallj">Dougall Johnson</a>
+
+Firestorm: <a href="../../firestorm.html">Overview</a> | <a href="../../firestorm-int.html">Base Instructions</a> | <a href="../../firestorm-simd.html">SIMD and FP Instructions</a>
+Icestorm:  <a href="../../icestorm.html">Overview</a> | <a href="../../icestorm-int.html">Base Instructions</a> | <a href="../../icestorm-simd.html">SIMD and FP Instructions</a>
+
+</pre><h1>LD1 (multiple, three registers, 4H)</h1><h2>Test 1: uops</h2><div style="margin-left: 40px"><p>Code:</p><pre>  ld1 { v0.4h, v1.4h, v2.4h }, [x6]
+  nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop ; nop</pre><div><input type="checkbox" id="checkbox-0" checked="checked"><label for="checkbox-0"><p>Initialization</p></label><div class="remove-check">
+<pre>  mov x0, 1
+  mov x1, 2
+  mov x8, 0</pre></div></div><p>(no loop instructions)</p><h3>1000 unrolls and 1 iteration</h3><div style="margin-left: 40px"><p>Retires (minus 60 nops): 3.000</p><p>Issues: 3.000</p><p>Integer unit issues: 0.001</p><p>Load/store unit issues: 3.000</p><p>SIMD/FP unit issues: 0.000</p><div><input type="checkbox" id="checkbox-1" checked="checked"><label for="checkbox-1"><p>Recorded non-zero counters (first 10 of 64 runs)</p></label><div class="remove-check">
+<table><thead><tr><td>retires (01)</td><td>cycle (02)</td><td>inst issue (52)</td><td>~dispatch int (53)</td><td>~dispatch ld/st (55)</td><td>~ops ld/st (58)</td><td>huge thing int (59)</td><td>huge thing ld/st (5a)</td><td>~fused-domain ops (78)</td><td>~sched ops int (7c)</td><td>~sched ops ld/st (7d)</td><td>~dependencies ld/st (80)</td><td>? int (e9)</td><td>? ld/st (ed)</td></tr></thead><tr><td>63005</td><td>29696</td><td>3007</td><td>1</td><td>3006</td><td>3000</td><td>0</td><td>9000</td><td>3000</td><td>0</td><td>3000</td><td>3000</td><td>1</td><td>3000</td></tr><tr><td>63004</td><td>29381</td><td>3001</td><td>1</td><td>3000</td><td>3000</td><td>0</td><td>9000</td><td>3000</td><td>0</td><td>3000</td><td>3000</td><td>1</td><td>3000</td></tr><tr><td>63004</td><td>29369</td><td>3001</td><td>1</td><td>3000</td><td>3000</td><td>0</td><td>9000</td><td>3000</td><td>0</td><td>3000</td><td>3000</td><td>1</td><td>3000</td></tr><tr><td>63004</td><td>29369</td><td>3001</td><td>1</td><td>3000</td><td>3000</td><td>0</td><td>9000</td><td>3000</td><td>0</td><td>3000</td><td>3000</td><td>1</td><td>3000</td></tr><tr><td>63004</td><td>29352</td><td>3001</td><td>1</td><td>3000</td><td>3000</td><td>0</td><td>9000</td><td>3000</td><td>0</td><td>3000</td><td>3003</td><td>1</td><td>3000</td></tr><tr><td>63004</td><td>29367</td><td>3001</td><td>1</td><td>3000</td><td>3000</td><td>0</td><td>9000</td><td>3000</td><td>0</td><td>3000</td><td>3000</td><td>1</td><td>3000</td></tr><tr><td>63004</td><td>29374</td><td>3001</td><td>1</td><td>3000</td><td>3000</td><td>0</td><td>9000</td><td>3000</td><td>0</td><td>3000</td><td>3000</td><td>1</td><td>3000</td></tr><tr><td>63004</td><td>29358</td><td>3001</td><td>1</td><td>3000</td><td>3000</td><td>0</td><td>9000</td><td>3000</td><td>0</td><td>3000</td><td>3000</td><td>1</td><td>3000</td></tr><tr><td>63004</td><td>29371</td><td>3001</td><td>1</td><td>3000</td><td>3000</td><td>0</td><td>9000</td><td>3000</td><td>0</td><td>3000</td><td>3000</td><td>1</td><td>3000</td></tr><tr><td>63004</td><td>29382</td><td>3001</td><td>1</td><td>3000</td><td>3000</td><td>0</td><td>9000</td><td>3000</td><td>0</td><td>3000</td><td>3000</td><td>1</td><td>3000</td></tr></table></div></div></div></div><h2>Test 2: throughput</h2><div style="margin-left: 40px"><p>Count: 8</p><p>Code:</p><pre>  ld1 { v0.4h, v1.4h, v2.4h }, [x6]
+  ld1 { v0.4h, v1.4h, v2.4h }, [x6]
+  ld1 { v0.4h, v1.4h, v2.4h }, [x6]
+  ld1 { v0.4h, v1.4h, v2.4h }, [x6]
+  ld1 { v0.4h, v1.4h, v2.4h }, [x6]
+  ld1 { v0.4h, v1.4h, v2.4h }, [x6]
+  ld1 { v0.4h, v1.4h, v2.4h }, [x6]
+  ld1 { v0.4h, v1.4h, v2.4h }, [x6]</pre><div><input type="checkbox" id="checkbox-2" checked="checked"><label for="checkbox-2"><p>Initialization</p></label><div class="remove-check">
+<pre>  mov x7, x6
+  mov x8, x6
+  mov x9, x6
+  mov x10, x6
+  mov x11, x6
+  mov x12, x6
+  mov x13, x6</pre></div></div><p>(SUBS/B.cc-based loop)</p><h3>100 unrolls and 100 iterations</h3><div style="margin-left: 40px"><p>Result (median cycles for "code"): 1.5007</p><div><input type="checkbox" id="checkbox-3" checked="checked"><label for="checkbox-3"><p>Recorded non-zero counters (first 10 of 64 runs)</p></label><div class="remove-check">
+<table><thead><tr><td>retires (01)</td><td>cycle (02)</td><td>inst issue (52)</td><td>~dispatch int (53)</td><td>~dispatch ld/st (55)</td><td>~ops int (56)</td><td>~ops ld/st (58)</td><td>huge thing int (59)</td><td>huge thing ld/st (5a)</td><td>huge thing fp/simd (5b)</td><td>~fused-domain ops (78)</td><td>~sched ops int (7c)</td><td>~sched ops ld/st (7d)</td><td>~sched ops fp/simd (7e)</td><td>~dependencies int (7f)</td><td>~dependencies ld/st (80)</td><td>? int (e9)</td><td>? ld/st (ed)</td><td>~int writes (ef)</td></tr></thead><tr><td>240205</td><td>120182</td><td>240135</td><td>101</td><td>240034</td><td>100</td><td>240008</td><td>300</td><td>744242</td><td>0</td><td>240108</td><td>200</td><td>240012</td><td>0</td><td>200</td><td>240012</td><td>1</td><td>240000</td><td>100</td></tr><tr><td>240204</td><td>120062</td><td>240105</td><td>101</td><td>240004</td><td>100</td><td>240008</td><td>300</td><td>1440242</td><td>0</td><td>240108</td><td>200</td><td>240012</td><td>0</td><td>200</td><td>240012</td><td>1</td><td>240000</td><td>100</td></tr><tr><td>240204</td><td>120056</td><td>240101</td><td>101</td><td>240000</td><td>100</td><td>240008</td><td>300</td><td>1927160</td><td>0</td><td>240108</td><td>200</td><td>240012</td><td>0</td><td>202</td><td>240238</td><td>2</td><td>240000</td><td>100</td></tr><tr><td>240204</td><td>120569</td><td>240227</td><td>101</td><td>240126</td><td>100</td><td>240059</td><td>300</td><td>1063373</td><td>0</td><td>240159</td><td>200</td><td>240072</td><td>0</td><td>200</td><td>240012</td><td>1</td><td>240000</td><td>100</td></tr><tr><td>240204</td><td>120056</td><td>240101</td><td>101</td><td>240000</td><td>100</td><td>240008</td><td>300</td><td>1920446</td><td>0</td><td>240108</td><td>200</td><td>240012</td><td>0</td><td>200</td><td>240012</td><td>1</td><td>240000</td><td>100</td></tr><tr><td>240204</td><td>120070</td><td>240101</td><td>101</td><td>240000</td><td>100</td><td>240008</td><td>300</td><td>1920248</td><td>0</td><td>240108</td><td>200</td><td>240012</td><td>0</td><td>200</td><td>240012</td><td>1</td><td>240000</td><td>100</td></tr><tr><td>240204</td><td>120056</td><td>240101</td><td>101</td><td>240000</td><td>100</td><td>240008</td><td>300</td><td>1920248</td><td>0</td><td>240108</td><td>200</td><td>240012</td><td>0</td><td>200</td><td>240068</td><td>1</td><td>240000</td><td>100</td></tr><tr><td>240204</td><td>120166</td><td>240101</td><td>101</td><td>240000</td><td>100</td><td>240008</td><td>300</td><td>1920428</td><td>0</td><td>240108</td><td>200</td><td>240012</td><td>0</td><td>200</td><td>240012</td><td>1</td><td>240000</td><td>100</td></tr><tr><td>240204</td><td>120056</td><td>240101</td><td>101</td><td>240000</td><td>100</td><td>240008</td><td>300</td><td>840242</td><td>0</td><td>240108</td><td>200</td><td>240012</td><td>0</td><td>200</td><td>240012</td><td>1</td><td>240000</td><td>100</td></tr><tr><td>240204</td><td>120298</td><td>240168</td><td>101</td><td>240067</td><td>100</td><td>240106</td><td>300</td><td>1014930</td><td>0</td><td>240206</td><td>200</td><td>240124</td><td>0</td><td>200</td><td>240123</td><td>1</td><td>240000</td><td>100</td></tr></table></div></div></div><h3>1000 unrolls and 10 iterations</h3><div style="margin-left: 40px"><p>Result (median cycles for "code"): 1.5007</p><div><input type="checkbox" id="checkbox-4" checked="checked"><label for="checkbox-4"><p>Recorded non-zero counters (first 10 of 64 runs)</p></label><div class="remove-check">
+<table><thead><tr><td>retires (01)</td><td>cycle (02)</td><td>inst issue (52)</td><td>~dispatch int (53)</td><td>~dispatch ld/st (55)</td><td>~ops int (56)</td><td>~ops ld/st (58)</td><td>huge thing int (59)</td><td>huge thing ld/st (5a)</td><td>~fused-domain ops (78)</td><td>~sched ops int (7c)</td><td>~sched ops ld/st (7d)</td><td>~dependencies int (7f)</td><td>~dependencies ld/st (80)</td><td>? int (e9)</td><td>? ld/st (ed)</td><td>~int writes (ef)</td></tr></thead><tr><td>240025</td><td>120305</td><td>240041</td><td>11</td><td>240030</td><td>10</td><td>240008</td><td>30</td><td>1920012</td><td>240018</td><td>20</td><td>240012</td><td>20</td><td>240000</td><td>1</td><td>240000</td><td>10</td></tr><tr><td>240024</td><td>120055</td><td>240011</td><td>11</td><td>240000</td><td>10</td><td>240000</td><td>30</td><td>1920144</td><td>240010</td><td>20</td><td>240000</td><td>20</td><td>240000</td><td>1</td><td>240000</td><td>10</td></tr><tr><td>240024</td><td>120076</td><td>240011</td><td>11</td><td>240000</td><td>10</td><td>240008</td><td>30</td><td>1415870</td><td>240018</td><td>20</td><td>240012</td><td>20</td><td>240000</td><td>1</td><td>240000</td><td>10</td></tr><tr><td>240024</td><td>120060</td><td>240011</td><td>11</td><td>240000</td><td>10</td><td>240000</td><td>30</td><td>1920326</td><td>240010</td><td>20</td><td>240000</td><td>20</td><td>240000</td><td>1</td><td>240000</td><td>10</td></tr><tr><td>240024</td><td>120054</td><td>240011</td><td>11</td><td>240000</td><td>10</td><td>240000</td><td>30</td><td>1920218</td><td>240010</td><td>20</td><td>240000</td><td>20</td><td>240000</td><td>1</td><td>240000</td><td>10</td></tr><tr><td>240024</td><td>120054</td><td>240011</td><td>11</td><td>240000</td><td>10</td><td>240000</td><td>30</td><td>1920218</td><td>240010</td><td>20</td><td>240000</td><td>20</td><td>240068</td><td>1</td><td>240000</td><td>10</td></tr><tr><td>240024</td><td>120045</td><td>240011</td><td>11</td><td>240000</td><td>10</td><td>240000</td><td>30</td><td>1920218</td><td>240010</td><td>20</td><td>240000</td><td>20</td><td>240000</td><td>1</td><td>240000</td><td>10</td></tr><tr><td>240024</td><td>120054</td><td>240011</td><td>11</td><td>240000</td><td>10</td><td>240000</td><td>30</td><td>1920218</td><td>240010</td><td>20</td><td>240000</td><td>20</td><td>240000</td><td>1</td><td>240000</td><td>10</td></tr><tr><td>240024</td><td>120054</td><td>240011</td><td>11</td><td>240000</td><td>10</td><td>240000</td><td>30</td><td>1920218</td><td>240010</td><td>20</td><td>240000</td><td>20</td><td>240000</td><td>1</td><td>240000</td><td>10</td></tr><tr><td>240024</td><td>120054</td><td>240011</td><td>11</td><td>240000</td><td>10</td><td>240000</td><td>30</td><td>1920218</td><td>240010</td><td>20</td><td>240000</td><td>20</td><td>240000</td><td>1</td><td>240000</td><td>10</td></tr></table></div></div></div></div></body></html>
