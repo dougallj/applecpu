@@ -51,7 +51,7 @@ FP/SIMD units:
 
 <ul>
 <li>MADD's output can be passed to its third operand (the addend) with 1c latency, but if it's chained with other instructions it has 3c latency.</li>
-<li>Loads may be passed to the base address of other loads with 3c latency (which is nice for linked lists), but chaining with out ALU operations gives a latency of 4c. (Although the second destination register in an LDP always has 4c latency.)</li>
+<li>Loads may be passed to the base address of other loads with 3c latency (which is nice for linked lists), but chaining with ALU operations gives a latency of 4c. (Although the second destination register in an LDP always has 4c latency.)</li>
 </ul>
 
 

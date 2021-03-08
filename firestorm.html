@@ -8,6 +8,7 @@ Icestorm:  <a href="icestorm.html">Overview</a> | <a href="icestorm-int.html">Ba
 <a href="https://github.com/travisdowns/robsize">Travis Downs</a>, <a href="http://blog.stuffedcow.net/2013/05/measuring-rob-capacity/">Henry Wong</a>
 and <a href="https://agner.org/optimize/">Agner Fog</a>. This documentation is my best effort, but it is based on black-box reverse engineering, and there are definitely mistakes. No warranty of any kind (and not just as a legal technicality). To make it easier to verify the information and/or identify such errors, entries in the instruction tables link to the experiments and results (~35k tables of counter values).</p>
 
+
 <p>Firestorm is the high-performance microarchitecture used by the four P-cores in the M1.</p>
 
 <h2>Firestorm Units (ports)</h2>
@@ -75,7 +76,7 @@ FP/SIMD units:
 
 <ul>
 <li>MADD's output can be passed to its third operand (the addend) with 1c latency, but if it's chained with other instructions it has 3c latency.</li>
-<li>Loads may be passed to the base address of other loads with 3c latency (which is nice for linked lists), but chaining with out ALU operations gives a latency of 4c. (Although the second destination register in an LDP always has 4c latency.)</li>
+<li>Loads may be passed to the base address of other loads with 3c latency (which is nice for linked lists), but chaining with ALU operations gives a latency of 4c. (Although the second destination register in an LDP always has 4c latency.)</li>
 <li>Integer to SIMD/FP roundtrip latency can be as low as 7c (e.g. when chaining flags operations).</li>
 </ul>
 
