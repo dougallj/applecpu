@@ -21,7 +21,7 @@ I apologise.)</p>
 Integer units:
 
   1:  alu + flags + branch + adr + msr/mrs nzcv + mrs
-  2:  alu + flags + branch + adr + msr/mrs nzcv
+  2:  alu + flags + branch + adr + msr/mrs nzcv + ptrauth
   3:  alu + flags + mov-from-simd/fp?
   4:  alu + mov-from-simd/fp?
   5:  alu + mul + div
@@ -78,6 +78,7 @@ FP/SIMD units:
 <li>MADD's output can be passed to its third operand (the addend) with 1c latency, but if it's chained with other instructions it has 3c latency.</li>
 <li>Loads may be passed to the base address of other loads with 3c latency (which is nice for linked lists), but chaining with ALU operations gives a latency of 4c. (Although the second destination register in an LDP always has 4c latency.)</li>
 <li>Integer to SIMD/FP roundtrip latency can be as low as 7c (e.g. when chaining flags operations).</li>
+<li>Not yet in the table: pointer authentication uops have seven cycle latency, one cycle throughput. They are one uop (except for memory operations).</li>
 </ul>
 
 
@@ -95,7 +96,48 @@ FP/SIMD units:
 <li>Store buffers: ~108</li>
 </ul>
 
-<p>These numbers mostly come from the <a href="https://gist.github.com/dougallj/5bafb113492047c865c0c8cfbc930155">M1 buffer size measuring tool</a>.
-The M1 seems to use something along the lines of a validation buffer, rather than a conventional reorder buffer, which
-complicates measurements a bit. So these may or may not be accurate.</p>
+<p>These numbers mostly come from my <a href="https://gist.github.com/dougallj/5bafb113492047c865c0c8cfbc930155">M1 buffer size measuring tool</a>.
+The M1 seems to use something other than an entirely conventional reorder buffer, which
+complicates measurements a bit. So these may or may not be accurate.
+(This paragraph previously said "it seems to use something along the lines of a validation buffer".
+I think the VB hypothesis has since been disproven. Various attempts to measure ROB size
+have yielded values 623, 853, and 2295 (see the previous link). My uninformed hypothesis
+is that this may imply a kind of distributed reorder buffer, where only structures that
+need to know about a given operation track them, and/or some kind of out-of-order retirement.)
+</p>
+
+
+<h2>Terminology</h2>
+
+<p>
+As instructions are executed, they are mapped to operations inside the processor.
+This work describes two kinds, "operations that retire" (which I call "retires",
+but should maybe be called "retirement slots"), and "operations that issue" (uops).
+Operations that issue are limited by how many ports are available that can execute
+that operation in a given cycle. Retirement slots are limited to eight per cycle,
+which I have called the "retires per cycle" limit, but likely corresponds to a
+frontend "decode width", rather than a limit related to retirement itself
+(which I suspect could be either out-of-order, or much wider). All instructions
+have at least one retire, but some instructions have more uops than retires
+(e.g. ADD (shift)), and others have fewer (e.g. NOP, LDP).
+</p>
+
+
+<p>
+These two types of operations can be measured, using the retire counter (counter 01,
+undocumented, shown in the <strong>Retire</strong> column in the tables), and the
+issue counter (counter 52, documented). The following three undocumented counters
+(53, 54, and 55) count the same kind of uops as the issue counter, but at a different
+point in the pipeline. These correspond to the <strong>Int</strong>, <strong>Mem</strong>
+and <strong>FP</strong> columns in the tables, and count uops that issues to units of
+the given type.
+</p>
+
+<p>
+Finally, the <strong>Units</strong> column is based on finding conflicts when measuring
+throughput - if two uops block each other, we can tell they both use the same unit.
+(Unfortunately these experiments are not yet automated nor included in the documentation,
+so there may be some mistakes.)
+</p>
+
 </body></html>
