@@ -20,7 +20,7 @@ I apologise.)</p>
 Integer units:
 
   1:  alu + br
-  2:  alu + br + div
+  2:  alu + br + div + ptrauth
   3:  alu + mul + bfm + crc
 
 Load and store units (up to 128-bit loads and stores, including address generation with shifts up to LSL #3):
@@ -37,12 +37,13 @@ FP/SIMD units:
 
 <h2>Elimination</h2>
 
-<p>Icestorm seems to eliminate "mov + movk" and "adr/adrp" as well as the Firestorm things.</p>
+<p>Icestorm eliminates <code>movz</code> + <code>movk</code> (pair only, but any shift on both) and <code>adr</code>/<code>adrp</code> as well as the Firestorm things.</p>
 
 
 <h2>Instruction Fusion</h2>
 
-<p>Mostly the same as Firestorm?</p>
+<p>Mostly the same as Firestorm. Icestorm also has <code>movz</code> + <code>movk</code> elimination, but still
+<strong>not</strong> <code>adrp</code> + <code>add</code> fusion (although it is one uop on account of <code>adr</code>/<code>adrp</code> elimination).</p>
 
 
 <h2>Complex Latencies</h2>

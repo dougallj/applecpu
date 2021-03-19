@@ -48,12 +48,17 @@ FP/SIMD units:
 <p>Certain instructions are able to issue as one uop if they appear consecutively in the instruction stream.</p>
 
 <ul>
-<li>adds/subs/ands/cmp/tst + b.cc (complete fusion when fused instructions read no more than 4 registers per 6 instructions)</li>
-<li>aese + aesmc (always fused if operands match pattern "A, B ; A, A")</li>
-<li>aesd + aesimc (always fused if operands match pattern "A, B ; A, A")</li>
-<li>pmull + eor (usually fused if operands match pattern "A, B, C ; A, A, D" or "A, B, C ; A, D, A")</li>
-<li>amx + amx (excluding loads and stores - probably fuses to something like a STP)</li>
+<li><code>adds</code>/<code>subs</code>/<code>ands</code>/<code>cmp</code>/<code>tst</code> + <code>b.cc</code> (complete fusion when fused instructions read no more than 4 registers per 6 instructions)</li>
+<li><code>add</code>/<code>sub</code>/<code>and</code>/<code>orr</code>/<code>eor</code>/<code>bic</code>/etc. + <code>cbnz</code>/<code>cbz</code> (usually fused, if destination matches cbz operand. also works with instruction variants that set flags)</li>
+<li><code>aese</code> + <code>aesmc</code> (always fused if operands match pattern "A, B ; A, A")</li>
+<li><code>aesd</code> + <code>aesimc</code> (always fused if operands match pattern "A, B ; A, A")</li>
+<li><code>pmull</code> + <code>eor</code> (usually fused if operands match pattern "A, B, C ; A, A, D" or "A, B, C ; A, D, A")</li>
+<li><code>amx</code> + <code>amx</code> (excluding loads and stores - probably fuses to something like a <code>stp</code>)</li>
 </ul>
+
+<p>Branch fusion does not work with implicit shift or extend, nor instructions that read flags (like <code>adc</code>)</p>
+
+<p>Other tested patterns are <strong>not</strong> fused, including <code>adrp</code> + <code>add</code>, and <code>mov</code> + <code>movk</code>.</p>
 
 
 <h2>Elimination</h2>
@@ -61,14 +66,16 @@ FP/SIMD units:
 <p>Certain instructions do not need to issue:</p>
 
 <ul>
-<li>mov x0, 0 (handled by renaming)</li>
-<li>mov x0, x1 (usually handled by renaming)</li>
-<li>movi v0.16b, #0 (handled by renaming)</li>
-<li>mov v0.16b, v1.16b (usually handled by renaming)</li>
-<li>mov imm/movz/movn (handled by renamer at a max of 2 per 8 instructions, includes all tested "mov")</li>
-<li>nop (never issues)</li>
+<li><code>mov x0, #0</code> (handled by renaming)</li>
+<li><code>mov x0, x1</code> (usually handled by renaming)</li>
+<li><code>movi v0.16b, #0</code> (handled by renaming)</li>
+<li><code>mov v0.16b, v1.16b</code> (usually handled by renaming)</li>
+<li><code>mov x0, #123</code> (handled by renamer at a max of 2 per 8 instructions, includes all tested immediate "mov" aliases e.g. bitwise/movz/movn)</li>
+<li><code>nop</code> (never issues)</li>
+<li><code>b</code> (unconditional branch never issues)</li>
 </ul>
 
+<p>Other tested instructions are <strong>not</strong> eliminated, including <code>adr</code>/<code>adrp</code>, and <code>mov x0, xzr</code>.</p>
 
 <h2>Complex Latencies</h2>
 
@@ -87,13 +94,13 @@ FP/SIMD units:
 <p>Firestorm can retire eight instructions per cycle, but can issue more uops (using implicit shifts or extends on ALU operations, as thus far other uops retire separately).</p>
 
 <ul>
-<li>Retires per cycle: 8</li>
+<li>"Retires" (uops that retire) per cycle: 8</li>
 <li>ROB (in-flight renames): ~623</li>
 <li>Integer physical register file size: ~380</li>
 <li>FP/SIMD physical register file size: ~434</li>
 <li>Fetch window tracking slots (in-flight I-cache lines or branches): ~144</li>
-<li>Load buffers: ~129</li>
-<li>Store buffers: ~108</li>
+<li>In-flight loads: ~129</li>
+<li>In-flight stores: ~108</li>
 </ul>
 
 <p>These numbers mostly come from my <a href="https://gist.github.com/dougallj/5bafb113492047c865c0c8cfbc930155">M1 buffer size measuring tool</a>.
