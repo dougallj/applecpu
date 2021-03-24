@@ -19,7 +19,7 @@ I apologise.)</p>
 <pre>
 Integer units:
 
-  1:  alu + br
+  1:  alu + br + mrs
   2:  alu + br + div + ptrauth
   3:  alu + mul + bfm + crc
 
@@ -31,7 +31,7 @@ Load and store units (up to 128-bit loads and stores, including address generati
 FP/SIMD units:
 
   6: fp/simd
-  7: fp/simd + fdiv (half width) ...
+  7: fp/simd + fdiv + to-int + div + recp + sqrt + sha + jcvtzs
 </pre>
 
 
@@ -59,10 +59,13 @@ FP/SIMD units:
 <h2>Other limits</h2>
 
 <ul>
-<li>Retires per cycle: 4</li>
-<li>ROB (in-flight renames): ~111</li>
+<li>Retires (uops that retire) per cycle: 4</li>
+<li>Coalesced retire queue size: ~60</li>
+<li>In-flight renames: ~111</li>
 <li>Integer physical register file size: ~79</li>
 <li>FP/SIMD physical register file size: ~87</li>
+<li>Load buffers: 30</li>
+<li>Store buffers: 18</li>
 </ul>
 
 <p>These numbers mostly come from my <a href="https://gist.github.com/dougallj/5bafb113492047c865c0c8cfbc930155">M1 buffer size measuring tool</a>.

@@ -95,12 +95,13 @@ FP/SIMD units:
 
 <ul>
 <li>"Retires" (uops that retire) per cycle: 8</li>
-<li>ROB (in-flight renames): ~623</li>
-<li>Integer physical register file size: ~380</li>
-<li>FP/SIMD physical register file size: ~434</li>
-<li>Fetch window tracking slots (in-flight I-cache lines or branches): ~144</li>
-<li>In-flight loads: ~129</li>
-<li>In-flight stores: ~108</li>
+<li>Coalesced retire queue size: ~330</li>
+<li>In-flight renames: ~623</li>
+<li>Integer physical register file size: ~380?</li>
+<li>FP/SIMD physical register file size: ~434?</li>
+<li>In-flight branches: ~144</li>
+<li>Load buffers: ~130</li>
+<li>Store buffers: ~60</li>
 </ul>
 
 <p>These numbers mostly come from my <a href="https://gist.github.com/dougallj/5bafb113492047c865c0c8cfbc930155">M1 buffer size measuring tool</a>.
@@ -109,9 +110,22 @@ complicates measurements a bit. So these may or may not be accurate.
 (This paragraph previously said "it seems to use something along the lines of a validation buffer".
 I think the VB hypothesis has since been disproven. Various attempts to measure ROB size
 have yielded values 623, 853, and 2295 (see the previous link). My uninformed hypothesis
-is that this may imply a kind of distributed reorder buffer, where only structures that
-need to know about a given operation track them, and/or some kind of out-of-order retirement.)
+is that this may imply a kind of distributed/coalesced reorder buffer, where only structures that
+need to know about a given operation track them.)
 </p>
+
+<p>My current ROB theory is the "Coalesced Retire Queue".
+Each "entry" can describe up to ~7 uops-that-retire (although this rate may only be hit for "nops" and eliminated mov instructions).
+Only one of these may be a load/store, and only one of these may be a branch instruction (probably the first and last respectively?).
+A separate "Rename Retire Queue" tracks in-flight renames, and each coalesced retire queue probably records how many entries to retire from the rename queue.
+Retirement rate is up to eight coalesced entries per cycle, and up to sixteen renames per cycle.
+This theory is probably not complete, but predicts ROB limits quite well. (Load and store buffers may be released before retirement, making it easy to observe
+the ~330 limit. Some noise is observed around these limits, which might be explained by varying of retire-group size/alignment, or might indicate problems
+with this theory.)</p>
+
+
+<p>I've posted to Twitter a <a href="https://twitter.com/dougallj/status/1373973478731255812">WIP diagram with scheduler/dispatch queue sizes</a>.</p>
+
 
 
 <h2>Terminology</h2>
