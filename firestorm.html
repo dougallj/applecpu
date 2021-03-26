@@ -84,6 +84,7 @@ FP/SIMD units:
 <ul>
 <li>MADD's output can be passed to its third operand (the addend) with 1c latency, but if it's chained with other instructions it has 3c latency.</li>
 <li>Loads may be passed to the base address of other loads with 3c latency (which is nice for linked lists), but chaining with ALU operations gives a latency of 4c. (Although the second destination register in an LDP always has 4c latency.)</li>
+<li>Loads may have an extra 1-cycle of latency when the index register is the output of a shift-like instruction. Addition and bitwise operations do not have this penalty. Other latency chains have not yet been tested.</li>
 <li>Integer to SIMD/FP roundtrip latency can be as low as 7c (e.g. when chaining flags operations).</li>
 <li>Not yet in the table: pointer authentication uops have seven cycle latency, one cycle throughput. They are one uop (except for memory operations).</li>
 </ul>
@@ -99,6 +100,7 @@ FP/SIMD units:
 <li>In-flight renames: ~623</li>
 <li>Integer physical register file size: ~380?</li>
 <li>FP/SIMD physical register file size: ~434?</li>
+<li>Flags physical register file (ring buffer?) size: ~128</li>
 <li>In-flight branches: ~144</li>
 <li>Load buffers: ~130</li>
 <li>Store buffers: ~60</li>
