@@ -153,7 +153,7 @@ undocumented, shown in the <strong>Retire</strong> column in the tables), and th
 issue counter (counter 52, documented). The following three undocumented counters
 (53, 54, and 55) count the same kind of uops as the issue counter, but at a different
 point in the pipeline. These correspond to the <strong>Int</strong>, <strong>Mem</strong>
-and <strong>FP</strong> columns in the tables, and count uops that issues to units of
+and <strong>FP</strong> columns in the tables, and count uops that issue to units of
 the given type.
 </p>
 
@@ -162,6 +162,12 @@ Finally, the <strong>Units</strong> column is based on finding conflicts when me
 throughput - if two uops block each other, we can tell they both use the same unit.
 (Unfortunately these experiments are not yet automated nor included in the documentation,
 so there may be some mistakes.)
+</p>
+
+<p>
+To access the uop counters, I used a kernel module to bypass an allow-list in xnu.
+I do not recommend or support this process, but
+<a href="https://github.com/dougallj/applecpu/tree/main/timer-hacks">my code is available for reference</a>.
 </p>
 
 </body></html>
