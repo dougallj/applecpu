@@ -58,7 +58,7 @@ FP/SIMD units:
 
 <p>Branch fusion does not work with implicit shift or extend, nor instructions that read flags (like <code>adc</code>)</p>
 
-<p>Other tested patterns are <strong>not</strong> fused, including <code>adrp</code> + <code>add</code>, and <code>mov</code> + <code>movk</code>.</p>
+<p>Other tested patterns are <strong>not</strong> fused, including <code>adrp</code> + <code>add</code>, <code>mov</code> + <code>movk</code>, <code>mul</code> + <code>umulh</code>, and <code>udiv</code> + <code>msub</code>.</p>
 
 
 <h2>Elimination</h2>
