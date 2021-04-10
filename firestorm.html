@@ -60,7 +60,6 @@ FP/SIMD units:
 
 <p>Other tested patterns are <strong>not</strong> fused, including <code>adrp</code> + <code>add</code>, <code>mov</code> + <code>movk</code>, <code>mul</code> + <code>umulh</code>, and <code>udiv</code> + <code>msub</code>.</p>
 
-
 <h2>Elimination</h2>
 
 <p>Certain instructions do not need to issue:</p>
@@ -99,8 +98,8 @@ FP/SIMD units:
 <li>Taken branches per cycle: 1</li>
 <li>Coalesced retire queue size: ~330</li>
 <li>In-flight renames: ~623</li>
-<li>Integer physical register file size: ~380?</li>
-<li>FP/SIMD physical register file size: ~434?</li>
+<li>Integer physical register file size: ~380-394?</li>
+<li>FP/SIMD physical register file size: ~432?</li>
 <li>Flags physical register file (ring buffer?) size: ~128</li>
 <li>In-flight branches: ~144</li>
 <li>Load buffers: ~130</li>
@@ -169,5 +168,6 @@ To access the uop counters, I used a kernel module to bypass an allow-list in xn
 I do not recommend or support this process, but
 <a href="https://github.com/dougallj/applecpu/tree/main/timer-hacks">my code is available for reference</a>.
 </p>
+
 
 </body></html>
