@@ -1,12 +1,15 @@
-<html><head><meta charset="UTF-8"><title>Icestorm Overview</title><style>body { background-color: #E7F2F8 }</style></head><body><pre><strong>Apple M1 Microarchitecture Research</strong> by <a href="https://twitter.com/dougallj">Dougall Johnson</a>
+<html><head><meta charset="UTF-8"><title>Icestorm Overview</title><style>body { background-color: #E7F2F8 }</style></head><body><pre><strong>Apple Microarchitecture Research</strong> by <a href="https://twitter.com/dougallj">Dougall Johnson</a>
 
-Firestorm: <a href="firestorm.html">Overview</a> | <a href="firestorm-int.html">Base Instructions</a> | <a href="firestorm-simd.html">SIMD and FP Instructions</a>
-Icestorm:  <a href="icestorm.html">Overview</a> | <a href="icestorm-int.html">Base Instructions</a> | <a href="icestorm-simd.html">SIMD and FP Instructions</a>
+M1/A14 P-core (Firestorm): <a href="firestorm.html">Overview</a> | <a href="firestorm-int.html">Base Instructions</a> | <a href="firestorm-simd.html">SIMD and FP Instructions</a>
+M1/A14 E-core (Icestorm):  <a href="icestorm.html">Overview</a> | <a href="icestorm-int.html">Base Instructions</a> | <a href="icestorm-simd.html">SIMD and FP Instructions</a>
 
-</pre><p>This is an early attempt at microarchitecture documentation for the CPU in the Apple M1, inspired by and building on the amazing work of <a href="https://uops.info/">Andreas Abel</a>,
+</pre><p>This is an attempt at microarchitecture documentation for the CPU in the Apple M1, inspired by and building on the amazing work of <a href="https://uops.info/">Andreas Abel</a>,
 <a href="https://www.anandtech.com/show/16226/apple-silicon-m1-a14-deep-dive/2">Andrei Frumusanu</a>, <a href="https://github.com/Veedrac/microarchitecturometer">@Veedrac</a>,
-<a href="https://github.com/travisdowns/robsize">Travis Downs</a>, <a href="http://blog.stuffedcow.net/2013/05/measuring-rob-capacity/">Henry Wong</a>
-and <a href="https://agner.org/optimize/">Agner Fog</a>. This documentation is my best effort, but it is based on black-box reverse engineering, and there are definitely mistakes. No warranty of any kind (and not just as a legal technicality). To make it easier to verify the information and/or identify such errors, entries in the instruction tables link to the experiments and results (~35k tables of counter values).</p>
+<a href="https://github.com/travisdowns/robsize">Travis Downs</a>, <a href="http://blog.stuffedcow.net/2013/05/measuring-rob-capacity/">Henry Wong</a>,
+<a href="https://agner.org/optimize/">Agner Fog</a> and <a href="https://twitter.com/handleym99/status/1437537535018684417">Maynard Handley</a>.
+This documentation is my best effort, but it is based on black-box reverse engineering, and there are definitely mistakes.
+No warranty of any kind (and not just as a legal technicality). To make it easier to verify the information and/or identify such errors,
+entries in the instruction tables link to the experiments and results (~35k tables of counter values).</p>
 
 <p>Icestorm is the high-efficiency microarchitecture used by the four E-cores in the M1. Low-power ARM cores are generally a bit less novel, so the notes here are a bit less thorough.</p>
 

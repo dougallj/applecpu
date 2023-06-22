@@ -1,40 +1,70 @@
-<html><head><meta charset="UTF-8"><title>Firestorm Overview</title></head><body><pre><strong>Apple M1 Microarchitecture Research</strong> by <a href="https://twitter.com/dougallj">Dougall Johnson</a>
+<html><head><meta charset="UTF-8"><title>Firestorm Overview</title></head><body><pre><strong>Apple Microarchitecture Research</strong> by <a href="https://twitter.com/dougallj">Dougall Johnson</a>
 
-Firestorm: <a href="firestorm.html">Overview</a> | <a href="firestorm-int.html">Base Instructions</a> | <a href="firestorm-simd.html">SIMD and FP Instructions</a>
-Icestorm:  <a href="icestorm.html">Overview</a> | <a href="icestorm-int.html">Base Instructions</a> | <a href="icestorm-simd.html">SIMD and FP Instructions</a>
+M1/A14 P-core (Firestorm): <a href="firestorm.html">Overview</a> | <a href="firestorm-int.html">Base Instructions</a> | <a href="firestorm-simd.html">SIMD and FP Instructions</a>
+M1/A14 E-core (Icestorm):  <a href="icestorm.html">Overview</a> | <a href="icestorm-int.html">Base Instructions</a> | <a href="icestorm-simd.html">SIMD and FP Instructions</a>
 
-</pre><p>This is an early attempt at microarchitecture documentation for the CPU in the Apple M1, inspired by and building on the amazing work of <a href="https://uops.info/">Andreas Abel</a>,
+</pre><p>This is an attempt at microarchitecture documentation for the CPU in the Apple M1, inspired by and building on the amazing work of <a href="https://uops.info/">Andreas Abel</a>,
 <a href="https://www.anandtech.com/show/16226/apple-silicon-m1-a14-deep-dive/2">Andrei Frumusanu</a>, <a href="https://github.com/Veedrac/microarchitecturometer">@Veedrac</a>,
-<a href="https://github.com/travisdowns/robsize">Travis Downs</a>, <a href="http://blog.stuffedcow.net/2013/05/measuring-rob-capacity/">Henry Wong</a>
-and <a href="https://agner.org/optimize/">Agner Fog</a>. This documentation is my best effort, but it is based on black-box reverse engineering, and there are definitely mistakes. No warranty of any kind (and not just as a legal technicality). To make it easier to verify the information and/or identify such errors, entries in the instruction tables link to the experiments and results (~35k tables of counter values).</p>
+<a href="https://github.com/travisdowns/robsize">Travis Downs</a>, <a href="http://blog.stuffedcow.net/2013/05/measuring-rob-capacity/">Henry Wong</a>,
+<a href="https://agner.org/optimize/">Agner Fog</a> and <a href="https://twitter.com/handleym99/status/1437537535018684417">Maynard Handley</a>.
+This documentation is my best effort, but it is based on black-box reverse engineering, and there are definitely mistakes.
+No warranty of any kind (and not just as a legal technicality). To make it easier to verify the information and/or identify such errors,
+entries in the instruction tables link to the experiments and results (~35k tables of counter values).</p>
 
 
 <p>Firestorm is the high-performance microarchitecture used by the four P-cores in the M1.</p>
 
-<h2>Firestorm Units (ports)</h2>
+<h2>Firestorm Pipeline Overview</h2>
 
-<p>These are refered to as "units", to try to avoid confusion if Apple releases official documentation, as they
-probably refer to them as "ports" or "pipes", and order them differently. (If this just causes more confusion,
-I apologise.)</p>
+<img src="firestorm.png" style="width: 100%; min-width: 900px; max-width: 1310px">
+
+<p>
+As instructions are executed, they are mapped to operations inside the processor. Typically, an
+instruction is decoded to one or more uops, each uop is <em>mapped</em> and <em>renamed</em> and
+placed into a dispatch queue. These uops are then <em>dispatched</em> from the queue to a scheduler.
+When the uop's input operands are ready, it <em>issues</em> from the scheduler, and is executed.
+After execution, it is marked as completed in the reorder buffer. Completed entries in the reorder
+buffer are then released in order.
+</p>
+
+<p>
+This work focuses on measuring each instruction's <strong>uops</strong> and <strong>issues</strong>.
+<strong>Uops</strong> count towards the "pipeline width" limit of 8 uops per cycle, and are measured
+using the <code>RETIRE_UOP</code> counter. <strong>Issues</strong> count towards the "execution unit"
+limits (one issue per unit per cycle), and can be measured using the documented <code>SCHEDULE_UOP</code>
+counter. Three undocumented counters measure issues to the integer, load/store, and simd units separately,
+so these values are provided in the instruction tables.
+</p>
+
+<p>
+All instructions have at least one uop, and most instructions have the same number of issues as uops,
+but some have fewer (e.g. <code>nop</code>, <code>ldp</code>, and fused instructions). On the other
+hand, some instructions have more issues than uops, e.g ALU operations with an optional shift or
+extend (which allows Firestorm to sustain 11 issues per cycle in contrived cases).
+</p>
+
+<h2>Firestorm Units</h2>
+
+<p>I use the name "units", but these may also be refered to as "ports" or "pipes".</p>
 
 <pre>
 Integer units:
 
-  1:  alu + flags + branch + adr + msr/mrs nzcv + mrs
-  2:  alu + flags + branch + adr + msr/mrs nzcv + ptrauth
-  3:  alu + flags + mov-from-simd/fp?
-  4:  alu + mov-from-simd/fp?
-  5:  alu + mul + div
-  6:  alu + mul + madd + crc + bfm/extr
+  1:  alu + ubfm/sbfm + flags + branch + adr + msr/mrs nzcv + mrs
+  2:  alu + ubfm/sbfm + flags + branch + adr + msr/mrs nzcv + indirect branch + ptrauth
+  3:  alu + ubfm/sbfm + flags + mov-from-simd/fp?
+  4:  alu + ubfm/sbfm + mov-from-simd/fp?
+  5:  alu + ubfm/sbfm + mul + div
+  6:  alu + ubfm/sbfm + mul + madd + crc + bfm/extr
 
-Load and store units (up to 128-bit loads and stores, including address generation with shifts up to LSL #3):
+Load/store units (up to 128-bit loads and stores, including address generation with shifts up to LSL #3):
 
   7:  store + amx
   8:  load/store + amx
   9:  load
   10: load
 
-FP/SIMD units:
+SIMD units:
 
   11: fp/simd
   12: fp/simd
@@ -50,8 +80,9 @@ FP/SIMD units:
 <ul>
 <li><code>adds</code>/<code>subs</code>/<code>ands</code>/<code>cmp</code>/<code>tst</code> + <code>b.cc</code> (complete fusion when fused instructions read no more than 4 registers per 6 instructions)</li>
 <li><code>add</code>/<code>sub</code>/<code>and</code>/<code>orr</code>/<code>eor</code>/<code>bic</code>/etc. + <code>cbnz</code>/<code>cbz</code> (usually fused, if destination matches cbz operand. also works with instruction variants that set flags)</li>
-<li><code>aese</code> + <code>aesmc</code> (always fused if operands match pattern "A, B ; A, A")</li>
-<li><code>aesd</code> + <code>aesimc</code> (always fused if operands match pattern "A, B ; A, A")</li>
+<li><code>aese</code> + <code>aesmc</code> (usually fused if operands match pattern "A, B ; A, A")</li>
+<li><code>aesd</code> + <code>aesimc</code> (usually fused if operands match pattern "A, B ; A, A")</li>
+<li><code>aese</code>/<code>aesd</code> + <code>eor</code> (usually fused if operands match pattern "A, B ; A, A, C" or "A, B ; A, C, A")</li>
 <li><code>pmull</code> + <code>eor</code> (usually fused if operands match pattern "A, B, C ; A, A, D" or "A, B, C ; A, D, A")</li>
 <li><code>amx</code> + <code>amx</code> (excluding loads and stores - probably fuses to something like a <code>stp</code>)</li>
 </ul>
@@ -65,16 +96,16 @@ FP/SIMD units:
 <p>Certain instructions do not need to issue:</p>
 
 <ul>
-<li><code>mov x0, #0</code> (handled by renaming)</li>
-<li><code>mov x0, x1</code> (usually handled by renaming)</li>
-<li><code>movi v0.16b, #0</code> (handled by renaming)</li>
-<li><code>mov v0.16b, v1.16b</code> (usually handled by renaming)</li>
-<li><code>mov x0, #123</code> (handled by renamer at a max of 2 per 8 instructions, includes all tested immediate "mov" aliases e.g. bitwise/movz/movn)</li>
+<li><code>mov x0, #0</code> (handled by renaming, as is 32-bit version)</li>
+<li><code>mov x0, x1</code> (usually handled by renaming, 64-bit version only)</li>
+<li><code>mov x0, #123</code> (handled by renaming at a max of 2 per 8 instructions, both 32-bit and 64-bit. Includes all tested immediate "mov" aliases e.g. bitwise/movz/movn)</li>
+<li><code>movi v0.16b, #0</code> (handled by renaming, including other types)</li>
+<li><code>mov v0.16b, v1.16b</code> (usually handled by renaming. Includes other full-width types e.g. <code>v0.8h</code> but not <code>v0.8b</code>)</li>
 <li><code>nop</code> (never issues)</li>
 <li><code>b</code> (unconditional branch never issues)</li>
 </ul>
 
-<p>Other tested instructions are <strong>not</strong> eliminated, including <code>adr</code>/<code>adrp</code>, and <code>mov x0, xzr</code>.</p>
+<p>Other tested instructions are <strong>not</strong> eliminated, including <code>adr</code>/<code>adrp</code>, <code>mov w0, w1</code> and <code>mov x0, xzr</code>.</p>
 
 <h2>Complex Latencies</h2>
 
@@ -85,89 +116,62 @@ FP/SIMD units:
 <li>Loads may be passed to the base address of other loads with 3c latency (which is nice for linked lists), but chaining with ALU operations gives a latency of 4c. (Although the second destination register in an LDP always has 4c latency.)</li>
 <li>Loads may have an extra 1-cycle of latency when the index register is the output of a shift-like instruction. Addition and bitwise operations do not have this penalty. Other latency chains have not yet been tested.</li>
 <li>Integer to SIMD/FP roundtrip latency can be as low as 7c (e.g. when chaining flags operations).</li>
-<li>Not yet in the table: pointer authentication uops have seven cycle latency, one cycle throughput. They are one uop (except for memory operations).</li>
 </ul>
 
 
 <h2>Other limits</h2>
 
-<p>Firestorm can retire eight instructions per cycle, but can issue more uops (using implicit shifts or extends on ALU operations, as thus far other uops retire separately).</p>
+<p>Firestorm has a pipeline width of eight instructions per cycle.</p>
 
 <ul>
-<li>"Retires" (uops that retire) per cycle: 8</li>
+<li>Uops per cycle: 8</li>
 <li>Taken branches per cycle: 1</li>
 <li>Coalesced retire queue size: ~330</li>
 <li>In-flight renames: ~623</li>
 <li>Integer physical register file size: ~380-394?</li>
 <li>FP/SIMD physical register file size: ~432?</li>
-<li>Flags physical register file (ring buffer?) size: ~128</li>
+<li>Flags physical register file size: ~128</li>
 <li>In-flight branches: ~144</li>
-<li>Load buffers: ~130</li>
-<li>Store buffers: ~60</li>
+<li>In-flight loads: ~130</li>
+<li>In-flight stores: ~60</li>
 </ul>
 
 <p>These numbers mostly come from my <a href="https://gist.github.com/dougallj/5bafb113492047c865c0c8cfbc930155">M1 buffer size measuring tool</a>.
-The M1 seems to use something other than an entirely conventional reorder buffer, which
-complicates measurements a bit. So these may or may not be accurate.
-(This paragraph previously said "it seems to use something along the lines of a validation buffer".
-I think the VB hypothesis has since been disproven. Various attempts to measure ROB size
-have yielded values 623, 853, and 2295 (see the previous link). My uninformed hypothesis
-is that this may imply a kind of distributed/coalesced reorder buffer, where only structures that
-need to know about a given operation track them.)
-</p>
+See also my blog post <a href="https://dougallj.wordpress.com/2021/04/08/apple-m1-load-and-store-queue-measurements/">Apple M1: Load and Store Queue Measurements</a>.</p>
 
-<p>My current ROB theory is the "Coalesced Retire Queue".
-Each "entry" can describe up to ~7 uops-that-retire (although this rate may only be hit for "nops" and eliminated mov instructions).
-Only one of these may be a load/store, and only one of these may be a branch instruction (probably the first and last respectively?).
-A separate "Rename Retire Queue" tracks in-flight renames, and each coalesced retire queue probably records how many entries to retire from the rename queue.
-Retirement rate is up to eight coalesced entries per cycle, and up to sixteen renames per cycle.
-This theory is probably not complete, but predicts ROB limits quite well. (Load and store buffers may be released before retirement, making it easy to observe
-the ~330 limit. Some noise is observed around these limits, which might be explained by varying of retire-group size/alignment, or might indicate problems
-with this theory.)</p>
-
-
-<p>I've posted to Twitter a <a href="https://twitter.com/dougallj/status/1373973478731255812">WIP diagram with scheduler/dispatch queue sizes</a>.</p>
-
-
-
-<h2>Terminology</h2>
+<h2>Completion, and the Reorder Buffer (ROB)</h2>
 
 <p>
-As instructions are executed, they are mapped to operations inside the processor.
-This work describes two kinds, "operations that retire" (which I call "retires",
-but should maybe be called "retirement slots"), and "operations that issue" (uops).
-Operations that issue are limited by how many ports are available that can execute
-that operation in a given cycle. Retirement slots are limited to eight per cycle,
-which I have called the "retires per cycle" limit, but likely corresponds to a
-frontend "decode width", rather than a limit related to retirement itself
-(which I suspect could be either out-of-order, or much wider). All instructions
-have at least one retire, but some instructions have more uops than retires
-(e.g. ADD (shift)), and others have fewer (e.g. NOP, LDP).
+Firestorm uses an unconventional reorder buffer, which I described as a ~330 entry "coalesced retire queue" and a ~623 "rename retire queue" (equivalent to a "Physical Register Reclaim Table").
+</p>
+
+<p>
+Firestorm coalesces uops into <strong>retire groups</strong>, which all retire together. A retire group may contain up to seven uops.
+Uops which can fail before retiring (such as memory accesses) must appear at the start of a group, and uops that can fail after retiring
+(such as conditional branches) must appear at the end of a group. Groups of seven uops are only observed for eliminated instructions,
+such as <code>nop</code> and <code>mov</code> with issuing uops limited to roughly four per group. The coalesced retire queue consists of
+~330 such groups. This allows an out-of-order window of just over 1000 (contrived) instructions that issue, or over 2200 <code>nop</code>
+instructions.
+</p>
+
+<p>
+Any time an architectural register is written, that write must be retired (regardless of whether the instruction is eliminated).
+This is tracked in a separate structure, called the "rename retire queue", which allows for up to ~623 renames. (For some examples:
+<code>cbz</code> or <code>str</code> do not require entries, <code>add</code> and <code>mov</code> need one entry,
+and <code>adds</code> or <code>ldp</code> need two entries.)
 </p>
 
 
 <p>
-These two types of operations can be measured, using the retire counter (counter 01,
-undocumented, shown in the <strong>Retire</strong> column in the tables), and the
-issue counter (counter 52, documented). The following three undocumented counters
-(53, 54, and 55) count the same kind of uops as the issue counter, but at a different
-point in the pipeline. These correspond to the <strong>Int</strong>, <strong>Mem</strong>
-and <strong>FP</strong> columns in the tables, and count uops that issue to units of
-the given type.
+I use <em>retirement</em> to refer to an instruction's entry in the reorder buffer being released.
+However, as I've <a href="https://dougallj.wordpress.com/2021/04/08/apple-m1-load-and-store-queue-measurements/">described in a blog post</a>,
+loads and stores may commit out-of-order if they are non-speculative. This has some interesting implications. In particular, once a
+store has "completed", the architectural state must have advanced past that point.
 </p>
 
 <p>
-Finally, the <strong>Units</strong> column is based on finding conflicts when measuring
-throughput - if two uops block each other, we can tell they both use the same unit.
-(Unfortunately these experiments are not yet automated nor included in the documentation,
-so there may be some mistakes.)
+Retirement-rate is <a href="https://twitter.com/dougallj/status/1380416269275389952">measured</a> at up to eight
+coalesced retire queue entries per cycle, or up to sixteen rename retire queue entries per cycle.
 </p>
-
-<p>
-To access the uop counters, I used a kernel module to bypass an allow-list in xnu.
-I do not recommend or support this process, but
-<a href="https://github.com/dougallj/applecpu/tree/main/timer-hacks">my code is available for reference</a>.
-</p>
-
 
 </body></html>

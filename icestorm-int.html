@@ -28,15 +28,21 @@
 		text-decoration: underline;
 	}
 	</style>
-	<style>body { background-color: #E7F2F8 }</style><pre><strong>Apple M1 Microarchitecture Research</strong> by <a href="https://twitter.com/dougallj">Dougall Johnson</a>
+	<style>body { background-color: #E7F2F8 }</style><pre><strong>Apple Microarchitecture Research</strong> by <a href="https://twitter.com/dougallj">Dougall Johnson</a>
 
-Firestorm: <a href="firestorm.html">Overview</a> | <a href="firestorm-int.html">Base Instructions</a> | <a href="firestorm-simd.html">SIMD and FP Instructions</a>
-Icestorm:  <a href="icestorm.html">Overview</a> | <a href="icestorm-int.html">Base Instructions</a> | <a href="icestorm-simd.html">SIMD and FP Instructions</a>
+M1/A14 P-core (Firestorm): <a href="firestorm.html">Overview</a> | <a href="firestorm-int.html">Base Instructions</a> | <a href="firestorm-simd.html">SIMD and FP Instructions</a>
+M1/A14 E-core (Icestorm):  <a href="icestorm.html">Overview</a> | <a href="icestorm-int.html">Base Instructions</a> | <a href="icestorm-simd.html">SIMD and FP Instructions</a>
 
 </pre><pre>
 <strong>Icestorm Base Instructions</strong>
 
-</pre><pre class="nolabel"><strong>                                          LAT        TP       Retire   Int   Mem   FP    Units (ports)</strong></pre><div><input type="checkbox" id="checkbox-0" checked="checked"><label for="checkbox-0"><pre><span class="clicky">ADC</span>                                       1          0.333    1        1     -     -     u1-3</pre></label><div class="remove-check">
+</pre><pre><strong>LAT</strong>: latency in cycles (cycles per instruction when latency bound)
+<strong>TP</strong>: reciprocal throughput (cycles per instruction when throughput bound)
+<strong>Uops</strong>: uop count (towards the pipeline width limit)
+<strong>Int</strong>/<strong>Mem</strong>/<strong>FP</strong>: issue counts for each group of units (towards the one per unit per cycle limit)
+<strong>Units</strong>: best guess of units used
+
+</strong></pre><pre class="nolabel"><strong>                                          LAT        TP       Uops     Int   Mem   FP    Units</strong></pre><div><input type="checkbox" id="checkbox-0" checked="checked"><label for="checkbox-0"><pre><span class="clicky">ADC</span>                                       1          0.333    1        1     -     -     u1-3</pre></label><div class="remove-check">
 <pre class="nolabel"> ADC (32-bit)                             <a href="measurements/icestorm/ADC_32.html">1</a>          <a href="measurements/icestorm/ADC_32.html">0.333</a>    1        1     -     -     u1-3</pre>
 <pre class="nolabel"> ADC (64-bit)                             <a href="measurements/icestorm/ADC_64.html">1</a>          <a href="measurements/icestorm/ADC_64.html">0.333</a>    1        1     -     -     u1-3</pre>
 </div></div><div><input type="checkbox" id="checkbox-1" checked="checked"><label for="checkbox-1"><pre><span class="clicky">ADCS</span>                                      1          0.584    1        1     -     -     u1-3</pre></label><div class="remove-check">
